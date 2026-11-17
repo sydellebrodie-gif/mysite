@@ -1,0 +1,26 @@
+# סודות ומשתני סביבה — לעולם לא במאגר
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# תלויות ובנייה
+node_modules/
+.next/
+dist/
+build/
+.vercel/
+
+# קבצי לקוחות ונתונים — לא במאגר
+uploads/
+customer-data/
+*.sqlite
+*.db
+
+# מערכת ועורכים
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
