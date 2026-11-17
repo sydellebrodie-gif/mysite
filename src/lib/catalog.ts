@@ -70,6 +70,7 @@ async function loadFromSupabase(): Promise<Catalog> {
       courierFeeAgorot: s.courier_fee_agorot, pickupEnabled: s.pickup_enabled, courierEnabled: s.courier_enabled,
       pickupBusinessDays: s.pickup_business_days ?? 5, courierBusinessDays: s.courier_business_days ?? 10,
       pickupCity: s.pickup_city ?? "נתניה",
+      bundlePackagingAgorot: s.bundle_packaging_agorot ?? 1000,
     },
     source: "supabase",
   };

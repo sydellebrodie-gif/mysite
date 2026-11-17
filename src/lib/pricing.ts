@@ -2,7 +2,8 @@
 //
 // כללים (docs/decisions.md):
 // * מארז קבוע: המחיר המאושר של המארז. מבצעים לא חלים על פריטים בתוך מארז קבוע.
-// * מארז בהרכבה חופשית: סכום המחירים הרגילים של הפריטים. אריזה: טרם נקבעה (0).
+// * מארז בהרכבה חופשית: סכום המחירים הרגילים של הפריטים.
+// * אריזה: תוספת קבועה לכל מארז (קבוע או חופשי), מוצגת כשורה נפרדת (הגדרות: bundlePackagingAgorot).
 // * מבצעי כמות קיימים (2 דפי מדבקות ב־25, 3 תחתיות ב־65) נספרים על כל היחידות של אותו מוצר
 //   מחוץ למארזים קבועים, גם בשורות נפרדות עם עיצובים שונים וגם בתוך מארז חופשי.
 // * אין הנחת כמות כללית ואין כפל הנחות (טרם הוחלט).
@@ -37,6 +38,7 @@ export interface Quote {
   itemsTotalAgorot: number;
   dealDiscountAgorot: number;
   dealNotes: string[];
+  packagingAgorot: number;
   deliveryFeeAgorot: number;
   totalAgorot: number;
   errors: string[];
@@ -164,6 +166,7 @@ export function computeQuote(cart: CartLine[], catalog: Catalog, delivery: Deliv
   }
 
   const itemsTotal = lines.reduce((s, l) => s + l.totalAgorot, 0);
+  const packaging = lines.filter((l) => l.kind === "bundle").length * catalog.settings.bundlePackagingAgorot;
   let deliveryFee = 0;
   if (delivery === "courier") {
     if (!catalog.settings.courierEnabled) errors.push("משלוח עם שליח לא זמין כרגע");
@@ -176,6 +179,7 @@ export function computeQuote(cart: CartLine[], catalog: Catalog, delivery: Deliv
   const ok = errors.length === 0 && lines.every((l) => l.errors.length === 0);
   return {
     lines, itemsTotalAgorot: itemsTotal, dealDiscountAgorot: dealDiscount, dealNotes,
-    deliveryFeeAgorot: deliveryFee, totalAgorot: itemsTotal - dealDiscount + deliveryFee, errors, ok,
+    packagingAgorot: packaging, deliveryFeeAgorot: deliveryFee,
+    totalAgorot: itemsTotal - dealDiscount + packaging + deliveryFee, errors, ok,
   };
 }

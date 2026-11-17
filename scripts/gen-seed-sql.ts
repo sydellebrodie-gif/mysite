@@ -1,5 +1,6 @@
 // יוצר את קובץ ה־SQL של הנתונים ההתחלתיים מתוך src/lib/seed-catalog.ts.
-// הרצה: npm run seed:sql   (בלי מחירי עלות: אלה מוזנים בממשק הניהול בלבד)
+// שימו לב: מיגרציה 004 כבר הוחלה על Supabase (שלב 2). שינויים בנתונים מאז נכתבים במיגרציות חדשות (005 ואילך), ולא מריצים את זה שוב.
+// הרצה (לבדיקה בלבד, מדפיס למסך): npm run seed:sql
 import { seedCatalog } from "../src/lib/seed-catalog.ts";
 
 const q = (s: string | null | undefined) => (s === null || s === undefined ? "null" : `'${s.replace(/'/g, "''")}'`);

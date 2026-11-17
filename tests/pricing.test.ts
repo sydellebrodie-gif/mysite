@@ -43,14 +43,17 @@ test("מארז קבוע במחיר המאושר, בלי מבצע על הפריט
   assert.equal(items.length, 10);
   const q = computeQuote([{ lineId: "b", kind: "bundle", bundleId: b.id, items }], cat, "pickup");
   assert.equal(q.ok, true, JSON.stringify(q));
-  assert.equal(q.totalAgorot, 110_00);
+  assert.equal(q.totalAgorot, 110_00 + 10_00); // + אריזה
+  assert.equal(q.packagingAgorot, 10_00);
   assert.equal(q.lines[0].regularAgorot, 150_00);
 });
 
-test("מארז חופשי: סכום הפריטים, מינימום 2, אותו מוצר עם תמונות שונות", () => {
+test("מארז חופשי: סכום הפריטים + אריזה, מינימום 3, אותו מוצר עם תמונות שונות", () => {
   const b = B("BFREE");
-  const one = computeQuote([{ lineId: "f", kind: "bundle", bundleId: b.id, items: [{ productId: P("P06").id, custom: standPhoto }] }], cat, "pickup");
-  assert.equal(one.ok, false);
+  const two = computeQuote([{ lineId: "f", kind: "bundle", bundleId: b.id, items: [
+    { productId: P("P06").id, custom: standPhoto }, { productId: P("P13").id, custom: towel }] }], cat, "pickup");
+  assert.equal(two.ok, false);
+  assert.match(two.lines[0].errors.join(), /לפחות 3/);
   const items = [
     { productId: P("P06").id, custom: c({ images: { photos: [img("a.jpg")] } }) },
     { productId: P("P06").id, custom: c({ images: { photos: [img("b.jpg")] } }) },
@@ -58,7 +61,7 @@ test("מארז חופשי: סכום הפריטים, מינימום 2, אותו �
   ];
   const q = computeQuote([{ lineId: "f", kind: "bundle", bundleId: b.id, items }], cat, "pickup");
   assert.equal(q.ok, true, JSON.stringify(q));
-  assert.equal(q.totalAgorot, 65_00 * 2 + 40_00);
+  assert.equal(q.totalAgorot, 65_00 * 2 + 40_00 + 10_00);
 });
 
 test("מלאי משותף: מוצר לבד ובמארז נספרים יחד", () => {
@@ -82,9 +85,23 @@ test("מלאי משותף: מוצר לבד ובמארז נספרים יחד", ()
   assert.equal(bundleStockLimit(b1, cat), 6);
 });
 
-test("מוצר לא זמין (מחזיק מפתחות מעץ) לא נמכר", () => {
-  const q = computeQuote([line("P14", 1, c({ images: { photos: [img()] } }))], cat, "pickup");
-  assert.equal(q.ok, false);
+test("מוצר לא זמין לא נמכר; מחזיק מפתחות מעץ במלאי 10", () => {
+  const photo = c({ images: { photos: [img()] } });
+  assert.equal(computeQuote([line("P14", 10, photo)], cat, "pickup").ok, true);
+  assert.equal(computeQuote([line("P14", 11, photo)], cat, "pickup").ok, false);
+  const off = { ...cat, products: cat.products.map((p) => p.code === "P14" ? { ...p, isAvailable: false } : p) };
+  assert.equal(computeQuote([line("P14", 1, photo)], off, "pickup").ok, false);
+});
+
+test("שתי שורות מארז = פעמיים אריזה; מוצרים בודדים בלי אריזה", () => {
+  const items = expandFixedBundle(B("B05")).map((productId) => ({ productId, custom: stickerSq }));
+  const q = computeQuote([
+    { lineId: "a", kind: "bundle", bundleId: B("B05").id, items },
+    { lineId: "b", kind: "bundle", bundleId: B("B05").id, items },
+    line("P13", 1, towel),
+  ], cat, "courier");
+  assert.equal(q.packagingAgorot, 20_00);
+  assert.equal(q.totalAgorot, 110_00 * 2 + 20_00 + 40_00 + 40_00);
 });
 
 test("ולידציה: מסלול עיצוב, מספר מילים, תמונות ושליחה אחרי התשלום", () => {

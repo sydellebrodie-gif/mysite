@@ -38,6 +38,7 @@ export default async function Home() {
                   <p className="price">
                     {formatILS(b.priceAgorot ?? 0)}{" "}
                     {regular > (b.priceAgorot ?? 0) && <s className="muted">{formatILS(regular)}</s>}
+                    {s.bundlePackagingAgorot > 0 && <small className="muted"> + אריזה {formatILS(s.bundlePackagingAgorot)}</small>}
                   </p>
                 </div>
               </Link>
@@ -78,6 +79,7 @@ export default async function Home() {
         </ol>
         <p className="muted">
           זמני הכנה: איסוף עצמי עד {s.pickupBusinessDays} ימי עסקים. משלוח עד {s.courierBusinessDays} ימי עסקים, כולל ההכנה.
+          הספירה מתחילה מקבלת התמונות (במוצר בלי תמונות: מהתשלום).
         </p>
       </section>
       {cat.source === "seed" && <p className="dev-note">מצב פיתוח: הקטלוג נטען מנתוני ההתחלה ולא ממסד הנתונים.</p>}

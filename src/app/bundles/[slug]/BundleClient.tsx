@@ -78,13 +78,15 @@ export default function BundleClient({ bundle: b, catalog }: { bundle: Bundle; c
             <p className="price big">
               {formatILS(b.priceAgorot ?? 0)}{" "}
               {quote.lines[0].regularAgorot! > (b.priceAgorot ?? 0) && <s className="muted">{formatILS(quote.lines[0].regularAgorot!)}</s>}
+              {catalog.settings.bundlePackagingAgorot > 0 && <small className="muted"> + אריזה {formatILS(catalog.settings.bundlePackagingAgorot)}</small>}
             </p>
           )}
           <DeliveryInfo s={catalog.settings} />
           {!fixed && (
             <div className="builder-pick">
               <h2 className="h-small">בחירת מוצרים</h2>
-              <p className="muted">אפשר להוסיף את אותו מוצר כמה פעמים, כל אחד בעיצוב אחר. לפחות {b.minItems} פריטים.</p>
+              <p className="muted">אפשר להוסיף את אותו מוצר כמה פעמים, כל אחד בעיצוב אחר. לפחות {b.minItems} פריטים.
+                {catalog.settings.bundlePackagingAgorot > 0 && <> המחיר הוא סכום המוצרים, ועוד אריזה {formatILS(catalog.settings.bundlePackagingAgorot)}.</>}</p>
               <ul className="pick-list">
                 {choices.map((p) => (
                   <li key={p.id}>
@@ -145,7 +147,7 @@ export default function BundleClient({ bundle: b, catalog }: { bundle: Bundle; c
               ) : null}
               <div className="sticky-total">
                 <span>סה״כ למארז: <strong className="ltr">{formatILS(price)}</strong>
-                  {quote.dealDiscountAgorot > 0 && <small> (כולל מבצע)</small>}</span>
+                  <small> ({[quote.packagingAgorot > 0 && "כולל אריזה", quote.dealDiscountAgorot > 0 && "כולל מבצע"].filter(Boolean).join(", ")})</small></span>
                 <button className="btn" type="submit" disabled={!fixed && items.length === 0}>
                   {editId ? "שמירת השינויים" : "הוספת המארז לסל"}
                 </button>

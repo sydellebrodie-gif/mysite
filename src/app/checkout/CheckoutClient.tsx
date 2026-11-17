@@ -99,6 +99,7 @@ export default function CheckoutClient({ catalog }: { catalog: Catalog }) {
             {delivery === "pickup"
               ? `איסוף עצמי מ${catalog.settings.pickupCity}, עד ${catalog.settings.pickupBusinessDays} ימי עסקים להכנה.`
               : `משלוח עם שליח, עד ${catalog.settings.courierBusinessDays} ימי עסקים כולל ההכנה.`}
+            {" "}הספירה מתחילה מקבלת התמונות.
           </p>
           <Link href="/cart" className="link-btn">חזרה לסל לעריכה</Link>
         </aside>

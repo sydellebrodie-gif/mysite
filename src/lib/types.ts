@@ -85,6 +85,8 @@ export interface ShopSettings {
   courierEnabled: boolean;
   pickupBusinessDays: number;
   courierBusinessDays: number;
+  /** תוספת אריזה לכל מארז (קבוע או חופשי) */
+  bundlePackagingAgorot: number;
   pickupCity: string;
 }
 

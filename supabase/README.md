@@ -15,7 +15,7 @@
 ## בדיקה מקומית
 ```bash
 createdb giftstest
-for f in tests/supabase_stub.sql migrations/*.sql tests/rls_test.sql; do psql -v ON_ERROR_STOP=1 -d giftstest -f "$f"; done
+for f in tests/supabase_stub.sql migrations/2026111700000*.sql tests/rls_test.sql; do psql -v ON_ERROR_STOP=1 -d giftstest -f "$f"; done
 ```
 
 ## עקרונות
@@ -30,9 +30,13 @@ for f in tests/supabase_stub.sql migrations/*.sql tests/rls_test.sql; do psql -v
 הקובץ מוסיף: קודי מוצר, מלאי משותף, מבצעים, מסלולי עיצוב, עיצובים קבועים, טבלת עלויות לניהול בלבד, זמני אספקה, ואת 14 המוצרים ו־8 המארזים.
 **מריצים פעם אחת בלבד.** ריצה שנייה תיכשל (המוצרים כבר קיימים) ולא תשנה כלום.
 
-`migrations/20261118000004_seed_catalog.sql` נוצר אוטומטית מ־`src/lib/seed-catalog.ts` (`npm run seed:sql`). לא עורכים אותו ידנית.
+`migrations/20261118000004_seed_catalog.sql` נוצר אוטומטית מ־`src/lib/seed-catalog.ts`. הוא כבר הוחל, ולכן הוא קפוא: שינויי נתונים מאז נכתבים במיגרציות חדשות.
 
 בדיקה מקומית של הקטלוג (על מסד ריק, בלי `rls_test.sql`):
 ```bash
 for f in tests/supabase_stub.sql migrations/*.sql tests/catalog_test.sql; do psql -v ON_ERROR_STOP=1 -d giftstest -f "$f"; done
 ```
+
+## שלב 3: תשובות בעלת העסק ומעקב העלאות (2026-11-19)
+מדביקים את כל `setup_step3.sql` ב־SQL Editor ← Run. אמורה להופיע השורה "שלב 3 הוחל בהצלחה". בטוח להריץ שוב.
+הקובץ מוסיף: אריזה 10 ₪ לכל מארז, מינימום 3 פריטים במארז חופשי, 10 מחזיקי מפתחות מעץ במלאי, ושדות מעקב להעלאת תמונות.

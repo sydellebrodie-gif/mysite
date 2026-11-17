@@ -160,9 +160,7 @@ const raw: SeedProduct[] = [
   {
     id: "c6e1b3eb-9797-46a9-a6a0-6023daa12e84", code: "P14", slug: "wood-keychain", name: "מחזיק מפתחות מעץ",
     description: "מחזיק מפתחות מעץ עם תמונה בכל צד, ללא טקסט. אם מעלים תמונה אחת, היא תודפס בשני הצדדים.",
-    categorySlug: "small", priceAgorot: ILS(20), stockMode: "counted", stockQty: 0,
-    // במלאי "בהזמנה" מהספק: מוצג כ"בקרוב" עד שיגיע ויעודכן בניהול
-    isAvailable: false,
+    categorySlug: "small", priceAgorot: ILS(20), stockMode: "counted", stockQty: 10,
     fields: [imagesField(null, 1, 2, "תמונות (1 או 2)", "תמונה לכל צד. תמונה אחת תודפס בשני הצדדים.")],
   },
 ];
@@ -228,8 +226,8 @@ export const seedBundles: Bundle[] = [
   },
   {
     id: "e900076e-b0d7-4b29-91c3-04556e327776", code: "BFREE", slug: "build", name: "מארז בהרכבה חופשית",
-    description: "בוחרים מוצרים וכמויות, גם אותו מוצר עם תמונות שונות, והכול נארז יחד. המחיר הוא סכום המוצרים.",
-    images: [], type: "free", priceAgorot: null, items: [], minItems: 2, maxItems: null,
+    description: "בוחרים מוצרים וכמויות, גם אותו מוצר עם תמונות שונות, והכול נארז יחד. המחיר הוא סכום המוצרים, ועוד אריזה.",
+    images: [], type: "free", priceAgorot: null, items: [], minItems: 3, maxItems: null,
   },
 ];
 
@@ -249,6 +247,7 @@ export const seedSettings: ShopSettings = {
   pickupBusinessDays: 5,
   courierBusinessDays: 10,
   pickupCity: "נתניה",
+  bundlePackagingAgorot: ILS(10),
 };
 
 export const seedCatalog: Catalog = {
