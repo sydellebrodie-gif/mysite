@@ -1,0 +1,36 @@
+:root {
+  --bg: #fffdf9;
+  --fg: #2b2522;
+  --muted: #6f6660;
+  --accent: #c2577a;
+  --accent-fg: #ffffff;
+  --border: #e9e1da;
+  --radius: 12px;
+  --tap: 44px; /* גודל מינימלי לכפתור במגע */
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-size: 16px; /* מונע זום אוטומטי בשדות באייפון */
+  line-height: 1.6;
+  -webkit-text-size-adjust: 100%;
+}
+a { color: var(--accent); }
+img { max-width: 100%; height: auto; }
+
+.container { width: 100%; max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: var(--tap); padding: 0 20px;
+  border: 0; border-radius: var(--radius);
+  background: var(--accent); color: var(--accent-fg);
+  font: inherit; font-weight: 600; text-decoration: none; cursor: pointer;
+}
+.btn:focus-visible, a:focus-visible { outline: 3px solid var(--fg); outline-offset: 2px; }
+
+/* מספרים, מחירים וטלפונים בתוך טקסט עברי */
+.ltr { direction: ltr; unicode-bidi: isolate; }

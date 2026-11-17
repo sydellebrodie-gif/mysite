@@ -24,3 +24,10 @@ Thumbs.db
 .vscode/
 .idea/
 *.log
+
+# Next.js
+/out/
+/coverage
+*.tsbuildinfo
+next-env.d.ts
+npm-debug.log*
