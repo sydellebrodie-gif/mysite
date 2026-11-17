@@ -6,7 +6,7 @@
 
 ## החלה על הפרויקט ב־Supabase
 1. רק על פרויקט **נפרד וריק** של החנות.
-2. Supabase → SQL Editor → מדביקים ומריצים את `20261117000001_core_schema.sql`, ואז את `20261117000002_storage.sql`.
+2. Supabase → SQL Editor → New query → מדביקים את כל התוכן של `setup_all.sql` (שני הקבצים יחד, בטרנזקציה אחת) → Run. אמורה להופיע השורה "ההקמה הצליחה".
 3. Authentication: מכבים הרשמה פתוחה (Allow new users to sign up = off), ומפעילים MFA (TOTP).
 4. יוצרים משתמשת ניהול (Authentication → Users → Invite), ואז מוסיפים אותה לרשימת המורשים:
    `insert into public.admins (user_id) values ('<user id מהמסך>');`
