@@ -1,0 +1,103 @@
+// בדיקות לחישוב המחיר, למבצעים, למארזים ולמלאי המשותף. נתונים מומצאים בלבד.
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { computeQuote, expandFixedBundle, bundleStockLimit } from "../src/lib/pricing.ts";
+import { validateCustomization, emptyCustomization, countWords } from "../src/lib/customization.ts";
+import { seedCatalog as cat } from "../src/lib/seed-catalog.ts";
+import type { CartLine, Customization, ImageRef } from "../src/lib/types.ts";
+
+const P = (code: string) => cat.products.find((p) => p.code === code)!;
+const B = (code: string) => cat.bundles.find((b) => b.code === code)!;
+const img = (name = "a.jpg"): ImageRef => ({ name, width: 2000, height: 1500, thumb: "" });
+const c = (o: Partial<Customization>): Customization => ({ ...emptyCustomization(), ...o });
+let n = 0;
+const line = (code: string, qty: number, custom: Customization): CartLine =>
+  ({ lineId: `l${n++}`, kind: "product", productId: P(code).id, qty, custom });
+
+const standPhoto = c({ images: { photos: [img()] } });
+const stickerSq = c({ option: "squares", images: { photos_squares: [img()] } });
+const towel = c({ values: { design: "שמח במטבח" } });
+
+test("מוצר רגיל ×2 + שליח", () => {
+  const q = computeQuote([line("P06", 2, standPhoto)], cat, "courier");
+  assert.equal(q.ok, true, JSON.stringify(q));
+  assert.equal(q.totalAgorot, 65_00 * 2 + 40_00);
+});
+
+test("מבצע 2 דפי מדבקות ב־25 חל גם על שורות נפרדות עם עיצובים שונים", () => {
+  const q = computeQuote([line("P04", 1, stickerSq), line("P04", 1, stickerSq), line("P04", 1, stickerSq)], cat, "pickup");
+  assert.equal(q.ok, true);
+  assert.equal(q.totalAgorot, 25_00 + 15_00);
+  assert.equal(q.dealDiscountAgorot, 5_00);
+});
+
+test("מבצע 3 תחתיות ב־65", () => {
+  const coaster = c({ option: "name", values: { name: "דנה" } });
+  const q = computeQuote([line("P11", 4, coaster)], cat, "pickup");
+  assert.equal(q.totalAgorot, 65_00 + 25_00);
+});
+
+test("מארז קבוע במחיר המאושר, בלי מבצע על הפריטים שבתוכו", () => {
+  const b = B("B05");
+  const items = expandFixedBundle(b).map((productId) => ({ productId, custom: stickerSq }));
+  assert.equal(items.length, 10);
+  const q = computeQuote([{ lineId: "b", kind: "bundle", bundleId: b.id, items }], cat, "pickup");
+  assert.equal(q.ok, true, JSON.stringify(q));
+  assert.equal(q.totalAgorot, 110_00);
+  assert.equal(q.lines[0].regularAgorot, 150_00);
+});
+
+test("מארז חופשי: סכום הפריטים, מינימום 2, אותו מוצר עם תמונות שונות", () => {
+  const b = B("BFREE");
+  const one = computeQuote([{ lineId: "f", kind: "bundle", bundleId: b.id, items: [{ productId: P("P06").id, custom: standPhoto }] }], cat, "pickup");
+  assert.equal(one.ok, false);
+  const items = [
+    { productId: P("P06").id, custom: c({ images: { photos: [img("a.jpg")] } }) },
+    { productId: P("P06").id, custom: c({ images: { photos: [img("b.jpg")] } }) },
+    { productId: P("P13").id, custom: towel },
+  ];
+  const q = computeQuote([{ lineId: "f", kind: "bundle", bundleId: b.id, items }], cat, "pickup");
+  assert.equal(q.ok, true, JSON.stringify(q));
+  assert.equal(q.totalAgorot, 65_00 * 2 + 40_00);
+});
+
+test("מלאי משותף: מוצר לבד ובמארז נספרים יחד", () => {
+  // מעמד מואר: 6 במלאי. 5 לבד + מארז "האור של סבתא" (כולל 1) + מארז חנוכה (כולל 1) = 7
+  const b1 = B("B01"), b3 = B("B03");
+  const filled = (b: typeof b1) => expandFixedBundle(b).map((productId) => {
+    const p = cat.products.find((x) => x.id === productId)!;
+    const custom = p.code === "P01" ? c({ option: "one_photo", images: { photos_one_photo: [img()] } })
+      : p.code === "P13" ? towel : c({ images: { photos: [img()] } });
+    return { productId, custom };
+  });
+  const cart: CartLine[] = [
+    line("P07", 5, standPhoto),
+    { lineId: "x", kind: "bundle", bundleId: b1.id, items: filled(b1) },
+  ];
+  assert.equal(computeQuote(cart, cat, "pickup").ok, true);
+  cart.push({ lineId: "y", kind: "bundle", bundleId: b3.id, items: filled(b3) });
+  const q = computeQuote(cart, cat, "pickup");
+  assert.equal(q.ok, false);
+  assert.match(q.errors.join(), /מעמד תמונה מואר/);
+  assert.equal(bundleStockLimit(b1, cat), 6);
+});
+
+test("מוצר לא זמין (מחזיק מפתחות מעץ) לא נמכר", () => {
+  const q = computeQuote([line("P14", 1, c({ images: { photos: [img()] } }))], cat, "pickup");
+  assert.equal(q.ok, false);
+});
+
+test("ולידציה: מסלול עיצוב, מספר מילים, תמונות ושליחה אחרי התשלום", () => {
+  const mug = P("P01");
+  assert.ok(validateCustomization(mug, c({}))._option);
+  const tooLong = c({ option: "photo_text", images: { photos_photo_text: [img()] }, values: { caption: "אחת שתיים שלוש ארבע חמש שש" } });
+  assert.ok(validateCustomization(mug, tooLong).caption);
+  assert.equal(countWords("  אמא   הכי טובה "), 3);
+  const noImg = c({ option: "two_photos", images: { photos_two_photos: [img()] } });
+  assert.ok(validateCustomization(mug, noImg).photos_two_photos);
+  assert.deepEqual(validateCustomization(mug, { ...noImg, sendLater: true }), {});
+  // מחזיק מפתחות: תמונה אחת מספיקה (תודפס בשני הצדדים)
+  assert.deepEqual(validateCustomization(P("P10"), c({ images: { photos: [img()] } })), {});
+  // יין: משפט רשות
+  assert.deepEqual(validateCustomization(P("P12"), c({ images: { photos: [img()] }, values: { design: "x" } })), {});
+});
