@@ -46,3 +46,21 @@ for f in tests/supabase_stub.sql migrations/*.sql tests/catalog_test.sql; do psq
 
 ## שלב 5: הנחת כמות ומלאי (2026-11-20)
 מדביקים את כל `setup_step5.sql` ב־SQL Editor ← Run. אמורה להופיע השורה "שלב 5 הוחל בהצלחה". בטוח להריץ שוב.
+
+## שלב 6: ממשק הניהול (2026-11-20)
+מדביקים את כל `setup_step6.sql` ב־SQL Editor ← Run. אמורה להופיע השורה "שלב 6 הוחל בהצלחה". בטוח להריץ שוב.
+מוסיף: סדר פריטים במארז, הרשאה לבעלת העסק להעלות קובץ להזמנה, ופעולות "העלאה" ו"עריכה" ביומן.
+
+## יצירת משתמשת הניהול (אחרי שהאתר באוויר)
+1. Supabase ← Authentication ← Users ← Add user ← Create new user: מייל וסיסמה חזקה, ולסמן Auto Confirm.
+2. מעתיקים את ה־User UID של המשתמשת החדשה.
+3. SQL Editor (מחליפים את המזהה):
+   ```sql
+   insert into public.admins(user_id) values ('<USER-UID>');
+   ```
+4. נכנסים ל־`/admin/login` באתר. בכניסה הראשונה סורקים את הקוד באפליקציית אימות (Google Authenticator או Microsoft Authenticator), ומקלידים את הקוד. מעכשיו כל כניסה דורשת סיסמה + קוד.
+- ההרשמה הפתוחה כבויה, כך שאף אחד לא יכול ליצור לעצמו חשבון. גם חשבון שנוצר בלי רשומה ב־admins לא רואה כלום.
+- אם הטלפון עם האפליקציה אבד: מוחקים את ה־MFA factor של המשתמשת ב־Authentication ← Users, ובכניסה הבאה מחברים אפליקציה מחדש.
+
+## בדיקות ממשק הניהול (מקומי)
+`tests/e2e/run-admin.sh` יוצר מסד מקומי מכל שלבי ההקמה, נתוני בדיקה מומצאים (`tests/e2e/admin-seed.sql`), שרת Supabase מדומה מעל המסד (`tests/e2e/pg-supabase.mjs`), ומריץ את הבדיקות בדפדפן.

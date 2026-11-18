@@ -11,9 +11,11 @@
     "seed:sql": "node scripts/gen-seed-sql.ts",
     "e2e": "node tests/e2e/flows.cjs",
     "e2e:uploads": "node tests/e2e/uploads.cjs",
-    "e2e:designs": "node tests/e2e/designs.cjs"
+    "e2e:designs": "node tests/e2e/designs.cjs",
+    "e2e:admin": "tests/e2e/run-admin.sh"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.119.0",
     "heic2any": "^0.0.4",
     "next": "15.5.4",
@@ -28,6 +30,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.5.4",
+    "pg": "^8.16.3",
     "typescript": "^5"
   }
 }
