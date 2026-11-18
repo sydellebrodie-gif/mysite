@@ -71,7 +71,7 @@ const raw: SeedProduct[] = [
     id: "33206795-20a2-4a56-b54c-94da0374ec3b", code: "P04", slug: "sticker-sheet", name: "דף מדבקות אישי עמיד במים",
     description: "דף מדבקות עמידות במים בעיצוב אישי. 15 ₪ לדף, 2 דפים ב־25 ₪.",
     categorySlug: "stickers", priceAgorot: ILS(15), deal: { qty: 2, priceAgorot: ILS(25) },
-    stockMode: "counted", stockQty: 20,
+    stockMode: "counted", stockQty: 150,
     designOptions: [
       { key: "squares", label: "מדבקות מרובעות", help: "עד 8 תמונות, תמונה לכל ריבוע" },
       { key: "cutout", label: "מדבקות בצורת הדמות שבתמונה", help: "עד 6 תמונות. החיתוך לפי צורת הדמות נעשה אצלנו" },

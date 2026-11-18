@@ -23,5 +23,9 @@ create policy customer_uploads_admin_insert on storage.objects
 alter table public.access_log drop constraint if exists access_log_action_check;
 alter table public.access_log add constraint access_log_action_check
   check (action in ('preview','download','delete','status_change','export','upload','edit'));
+-- Owner (2026-11-18): there are 150 sticker sheets (P04). Only replaces the placeholder 20, so a re-run
+-- never overwrites a count the owner updated later.
+update public.products set stock_qty = 150
+  where id = '33206795-20a2-4a56-b54c-94da0374ec3b' and stock_mode = 'counted' and stock_qty = 20;
 select 'שלב 6 הוחל בהצלחה' as result;
 commit;
