@@ -18,6 +18,9 @@ export default async function Home() {
       <section className="hero">
         <h1>מתנות בעיצוב אישי</h1>
         <p>ספלים, מעמדי תמונה, מדבקות, שוקולדים ועוד, עם התמונות והמילים שלכם.</p>
+        {s.quantityDiscountPercent > 0 && (
+          <p className="promo">{s.quantityDiscountPercent}% הנחה בקנייה של {s.quantityDiscountMinUnits} מוצרים ומעלה</p>
+        )}
         <div className="hero-actions">
           <Link className="btn" href="#bundles">למארזים</Link>
           <Link className="btn secondary" href="#products">לכל המוצרים</Link>

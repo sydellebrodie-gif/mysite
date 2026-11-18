@@ -71,7 +71,7 @@ const raw: SeedProduct[] = [
     id: "33206795-20a2-4a56-b54c-94da0374ec3b", code: "P04", slug: "sticker-sheet", name: "דף מדבקות אישי עמיד במים",
     description: "דף מדבקות עמידות במים בעיצוב אישי. 15 ₪ לדף, 2 דפים ב־25 ₪.",
     categorySlug: "stickers", priceAgorot: ILS(15), deal: { qty: 2, priceAgorot: ILS(25) },
-    stockMode: "plenty", stockQty: null,
+    stockMode: "counted", stockQty: 20,
     designOptions: [
       { key: "squares", label: "מדבקות מרובעות", help: "עד 8 תמונות, תמונה לכל ריבוע" },
       { key: "cutout", label: "מדבקות בצורת הדמות שבתמונה", help: "עד 6 תמונות. החיתוך לפי צורת הדמות נעשה אצלנו" },
@@ -91,7 +91,7 @@ const raw: SeedProduct[] = [
   {
     id: "db1255aa-1aee-418a-8498-d7d12f4cc2fe", code: "P05", slug: "chocolates-16", name: "מארז 16 שוקולדים אישיים",
     description: "16 שוקולדים: בצד אחד תמונה אישית ובצד השני \"חג שמח\". אפשר עד 2 תמונות שונות לכל המארז. ללא טקסט אישי.",
-    categorySlug: "treats", priceAgorot: ILS(47), stockMode: "plenty", stockQty: null,
+    categorySlug: "treats", priceAgorot: ILS(47), stockMode: "counted", stockQty: 20,
     designOptions: [],
     fields: [imagesField(null, 1, 2, "תמונות (1 או 2)")],
   },
@@ -110,19 +110,19 @@ const raw: SeedProduct[] = [
   {
     id: "575e57cd-2590-44da-a640-c3cf3525463c", code: "P08", slug: "photo-fan", name: "מניפה עם תמונה",
     description: "מניפה עם תמונה אישית. תמונה אחת, ללא טקסט.",
-    categorySlug: "small", priceAgorot: ILS(45), stockMode: "plenty", stockQty: null,
+    categorySlug: "small", priceAgorot: ILS(45), stockMode: "counted", stockQty: 20,
     fields: [imagesField(null, 1, 1)],
   },
   {
     id: "8eb83f72-cbcf-4ae0-9b14-6437f285e074", code: "P09", slug: "lipstick-holder", name: "מחזיק אודם",
     description: "מחזיק אודם בבחירה מתוך עיצובים קבועים.",
-    categorySlug: "small", priceAgorot: ILS(20), stockMode: "plenty", stockQty: null,
+    categorySlug: "small", priceAgorot: ILS(20), stockMode: "counted", stockQty: 20,
     fields: [designField(null)],
   },
   {
     id: "eccb8879-458a-4552-bb39-e6b75c0ee288", code: "P10", slug: "keychain", name: "מחזיק מפתחות",
     description: "מחזיק מפתחות עם תמונה בכל צד, ללא טקסט. אם מעלים תמונה אחת, היא תודפס בשני הצדדים.",
-    categorySlug: "small", priceAgorot: ILS(20), stockMode: "plenty", stockQty: null,
+    categorySlug: "small", priceAgorot: ILS(20), stockMode: "counted", stockQty: 20,
     fields: [imagesField(null, 1, 2, "תמונות (1 או 2)", "תמונה לכל צד. תמונה אחת תודפס בשני הצדדים.")],
   },
   {
@@ -144,7 +144,7 @@ const raw: SeedProduct[] = [
   {
     id: "2b27166c-a6bb-4a53-a05d-9998f7be5fe0", code: "P12", slug: "wine-gift", name: "בקבוק יין עם תמונה ותיק מעוצב",
     description: "בקבוק יין עם מדבקה אישית (תמונה, ואפשר גם משפט עד 6 מילים), ותיק עם כיתוב מעוצב לבחירה. סוג היין יעודכן בהמשך.",
-    categorySlug: "treats", priceAgorot: ILS(65), stockMode: "plenty", stockQty: null,
+    categorySlug: "treats", priceAgorot: ILS(65), stockMode: "counted", stockQty: 20,
     fields: [
       imagesField(null, 1, 1, "תמונה למדבקת הבקבוק"),
       wordsField(null, "bottle_text", "משפט על הבקבוק (רשות)", 6, false),
@@ -248,6 +248,8 @@ export const seedSettings: ShopSettings = {
   courierBusinessDays: 10,
   pickupCity: "נתניה",
   bundlePackagingAgorot: ILS(10),
+  quantityDiscountMinUnits: 3,
+  quantityDiscountPercent: 10,
 };
 
 export const seedCatalog: Catalog = {

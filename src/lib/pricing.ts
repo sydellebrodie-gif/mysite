@@ -6,7 +6,9 @@
 // * אריזה: תוספת קבועה לכל מארז (קבוע או חופשי), מוצגת כשורה נפרדת (הגדרות: bundlePackagingAgorot).
 // * מבצעי כמות קיימים (2 דפי מדבקות ב־25, 3 תחתיות ב־65) נספרים על כל היחידות של אותו מוצר
 //   מחוץ למארזים קבועים, גם בשורות נפרדות עם עיצובים שונים וגם בתוך מארז חופשי.
-// * אין הנחת כמות כללית ואין כפל הנחות (טרם הוחלט).
+// * הנחת כמות: 10% מ־3 מוצרים ומעלה (הגדרות). נספרות כל היחידות מחוץ למארזים קבועים
+//   (שורות נפרדות ופריטים במארז חופשי), וההנחה חלה עליהן.
+// * אין כפל הנחות: לכל מוצר נבחרת ההנחה הטובה יותר ללקוח, מבצע הכמות שלו או הנחת הכמות.
 // * מלאי משותף: כל יחידה, לבד או במארז, יורדת מאותו מלאי.
 
 import { designLimitErrors } from "./bundle-designs.ts";
@@ -39,6 +41,11 @@ export interface Quote {
   itemsTotalAgorot: number;
   dealDiscountAgorot: number;
   dealNotes: string[];
+  /** הנחת הכמות הכללית (באחוזים), על מוצרים שבהם היא טובה מהמבצע */
+  quantityDiscountAgorot: number;
+  /** כמה יחידות נספרות להנחת הכמות, וכמה חסרות כדי לקבל אותה (0 = כבר מגיעה) */
+  discountUnits: number;
+  unitsToDiscount: number;
   packagingAgorot: number;
   deliveryFeeAgorot: number;
   totalAgorot: number;
@@ -155,14 +162,21 @@ export function computeQuote(cart: CartLine[], catalog: Catalog, delivery: Deliv
       errors.push(`${p.name}: יש במלאי ${p.stockQty ?? 0} יחידות, ובסל ${n} (כולל בתוך מארזים)`);
   }
 
-  // מבצעי כמות
+  // מבצעי כמות והנחת כמות כללית, בלי כפל: לכל מוצר ההנחה הגבוהה מבין השתיים
+  const st = catalog.settings;
+  const discountUnits = [...dealUnits.values()].reduce((a, b) => a + b, 0);
+  const pct = st.quantityDiscountPercent > 0 && discountUnits >= st.quantityDiscountMinUnits ? st.quantityDiscountPercent : 0;
+  const unitsToDiscount = st.quantityDiscountPercent > 0 ? Math.max(0, st.quantityDiscountMinUnits - discountUnits) : 0;
   let dealDiscount = 0;
+  let quantityDiscount = 0;
   const dealNotes: string[] = [];
   for (const [pid, n] of dealUnits) {
     const p = productById.get(pid)!;
-    const disc = n * p.priceAgorot - dealTotal(p, n);
-    if (disc > 0) {
-      dealDiscount += disc;
+    const deal = n * p.priceAgorot - dealTotal(p, n);
+    const qty = Math.round((n * p.priceAgorot * pct) / 100);
+    if (qty > 0 && qty >= deal) quantityDiscount += qty;
+    else if (deal > 0) {
+      dealDiscount += deal;
       dealNotes.push(`${p.name}: ${p.deal!.qty} ב־${p.deal!.priceAgorot / 100} ₪`);
     }
   }
@@ -181,7 +195,8 @@ export function computeQuote(cart: CartLine[], catalog: Catalog, delivery: Deliv
   const ok = errors.length === 0 && lines.every((l) => l.errors.length === 0);
   return {
     lines, itemsTotalAgorot: itemsTotal, dealDiscountAgorot: dealDiscount, dealNotes,
+    quantityDiscountAgorot: quantityDiscount, discountUnits, unitsToDiscount,
     packagingAgorot: packaging, deliveryFeeAgorot: deliveryFee,
-    totalAgorot: itemsTotal - dealDiscount + packaging + deliveryFee, errors, ok,
+    totalAgorot: itemsTotal - dealDiscount - quantityDiscount + packaging + deliveryFee, errors, ok,
   };
 }

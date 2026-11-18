@@ -101,7 +101,7 @@ const check = (name, ok, extra = '') => { results.push(`${ok ? 'PASS' : 'FAIL'} 
   await body().locator('.thumbs img').waitFor();
   await settled();
   const total = await page.locator('.sticky-total strong').innerText();
-  check('free bundle total 180 (170 + packaging)', total.includes('180'), total);
+  check('free bundle total 163 (170 - 10% + packaging)', total.includes('163'), total);
   check('free bundle labels', await page.getByText('מעמד תמונה על בסיס עץ (2 מתוך 2)').isVisible());
   await settled(); await page.getByRole('button', { name: 'הוספת המארז לסל' }).click();
   check('free bundle added', await page.getByText('המארז נוסף לסל.').isVisible());
@@ -112,9 +112,10 @@ const check = (name, ok, extra = '') => { results.push(`${ok ? 'PASS' : 'FAIL'} 
   const lines = page.locator('.cart-lines > li');
   check('cart has 8 lines', (await lines.count()) === 8, String(await lines.count()));
   check('deal discount shown', await page.getByText(/מבצע \(דף מדבקות/).isVisible());
-  // expected: mugs 130 + stand 65 + stickers 3*15=45 + B01 145 + free 170 = 555, deal -5, packaging 2x10 => 570
+  // expected: mugs 130 + stand 65 + stickers 3*15=45 + B01 145 + free 170 = 555, sticker deal -5 (better than 10%),
+  // 10% quantity discount on the rest outside fixed bundles (130+65+170)=-36.50, packaging 2x10 => 533.50
   const grand = await page.locator('.totals .grand dd').innerText();
-  check('cart total 570 before delivery', grand.includes('570'), grand);
+  check('cart total 533.50 before delivery', grand.includes('533.50'), grand);
   check('packaging line shown', await page.getByText('אריזה למארזים').isVisible());
   // edit first mug caption
   await lines.first().getByRole('link', { name: 'עריכה' }).click();
@@ -128,7 +129,7 @@ const check = (name, ok, extra = '') => { results.push(`${ok ? 'PASS' : 'FAIL'} 
   check('edit saved + survives reload', await page.getByText('כיתוב: לסבתא באהבה').isVisible());
   check('cart no h-scroll', await noHScroll());
   await page.getByText(/שליח עד הבית/).click();
-  check('courier adds 40', (await page.locator('.totals .grand dd').innerText()).includes('610'));
+  check('courier adds 40', (await page.locator('.totals .grand dd').innerText()).includes('573.50'));
   await shot('cart.png');
 
   // --- checkout
@@ -144,7 +145,7 @@ const check = (name, ok, extra = '') => { results.push(`${ok ? 'PASS' : 'FAIL'} 
   await page.getByRole('button', { name: /^לתשלום/ }).click();
   await page.getByText(/מצב הדגמה/).waitFor({ timeout: 5000 }).catch(() => {});
   const demo = await page.getByText(/מצב הדגמה/).innerText().catch(() => '');
-  check('server re-priced 610 (demo)', demo.includes('610'), demo);
+  check('server re-priced 573.50 (demo)', demo.includes('573.50'), demo);
   check('checkout no h-scroll', await noHScroll());
   await shot('checkout.png');
 

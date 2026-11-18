@@ -8,6 +8,9 @@ export default function Totals({ q, deliveryChosen }: { q: Quote; deliveryChosen
       {q.dealDiscountAgorot > 0 && (
         <div><dt>מבצע ({q.dealNotes.join("; ")})</dt><dd className="ltr">−{formatILS(q.dealDiscountAgorot)}</dd></div>
       )}
+      {q.quantityDiscountAgorot > 0 && (
+        <div><dt>הנחת כמות</dt><dd className="ltr">−{formatILS(q.quantityDiscountAgorot)}</dd></div>
+      )}
       {q.packagingAgorot > 0 && (
         <div><dt>אריזה למארזים</dt><dd className="ltr">{formatILS(q.packagingAgorot)}</dd></div>
       )}

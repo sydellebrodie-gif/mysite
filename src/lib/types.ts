@@ -89,6 +89,9 @@ export interface ShopSettings {
   courierBusinessDays: number;
   /** תוספת אריזה לכל מארז (קבוע או חופשי) */
   bundlePackagingAgorot: number;
+  /** הנחת כמות: מכמה מוצרים (מחוץ למארזים קבועים), ובכמה אחוזים. 0 אחוז = כבוי */
+  quantityDiscountMinUnits: number;
+  quantityDiscountPercent: number;
   pickupCity: string;
 }
 

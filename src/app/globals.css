@@ -207,3 +207,5 @@ ul.error { padding-inline-start: 18px; }
 .design-count { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 4px 0 12px; font-weight: 600; }
 .stepper button:disabled { opacity: .4; cursor: not-allowed; }
 .stepper output { min-width: 48px; text-align: center; font-weight: 700; }
+.promo { display: inline-block; background: var(--soft); color: #8f3354; border-radius: 999px; padding: 6px 14px; font-weight: 600; margin: 8px 0; }
+.small { font-size: .9rem; }

@@ -101,6 +101,12 @@ export default function CartClient({ catalog }: { catalog: Catalog }) {
         )}
       </fieldset>
 
+      {q.unitsToDiscount > 0 && q.discountUnits > 0 && (
+        <p className="promo">עוד {q.unitsToDiscount === 1 ? "מוצר אחד" : `${q.unitsToDiscount} מוצרים`} ו־{s.quantityDiscountPercent}% הנחה</p>
+      )}
+      {q.quantityDiscountAgorot > 0 && q.dealDiscountAgorot > 0 && (
+        <p className="muted small">אין כפל הנחות: בכל מוצר חלה ההנחה המשתלמת יותר, המבצע או הנחת הכמות.</p>
+      )}
       <Totals q={q} deliveryChosen={!!delivery} />
       {q.errors.filter((e) => e !== "הסל ריק").map((e) => <p key={e} className="error">{e}</p>)}
       {q.lines.some((l) => l.awaitingImages) && (

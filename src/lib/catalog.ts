@@ -71,6 +71,8 @@ async function loadFromSupabase(): Promise<Catalog> {
       pickupBusinessDays: s.pickup_business_days ?? 5, courierBusinessDays: s.courier_business_days ?? 10,
       pickupCity: s.pickup_city ?? "נתניה",
       bundlePackagingAgorot: s.bundle_packaging_agorot ?? 1000,
+      quantityDiscountMinUnits: s.quantity_discount_min_units ?? 3,
+      quantityDiscountPercent: s.quantity_discount_percent ?? 0,
     },
     source: "supabase",
   };

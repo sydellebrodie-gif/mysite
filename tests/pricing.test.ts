@@ -61,7 +61,9 @@ test("מארז חופשי: סכום הפריטים + אריזה, מינימום 
   ];
   const q = computeQuote([{ lineId: "f", kind: "bundle", bundleId: b.id, items }], cat, "pickup");
   assert.equal(q.ok, true, JSON.stringify(q));
-  assert.equal(q.totalAgorot, 65_00 * 2 + 40_00 + 10_00);
+  // 3 פריטים במארז חופשי מזכים בהנחת כמות 10%
+  assert.equal(q.quantityDiscountAgorot, 17_00);
+  assert.equal(q.totalAgorot, 65_00 * 2 + 40_00 - 17_00 + 10_00);
 });
 
 test("מלאי משותף: מוצר לבד ובמארז נספרים יחד", () => {
@@ -140,4 +142,26 @@ test("מדביקים חיוכים: 10 דפים בעד 5 עיצובים", async (
   const b4 = B("B04");
   const same = expandFixedBundle(b4).map((productId) => ({ productId, custom: emptyCustomization() }));
   assert.equal(toGroups(b4, same).length, 3);
+});
+
+test("הנחת כמות 10% מ־3 מוצרים, בלי כפל עם מבצע", () => {
+  // 2 מוצרים: אין הנחה, וחסר מוצר אחד
+  const two = computeQuote([line("P06", 2, standPhoto)], cat, "pickup");
+  assert.equal(two.quantityDiscountAgorot, 0);
+  assert.equal(two.unitsToDiscount, 1);
+  // 3 מעמדים: 10%
+  const three = computeQuote([line("P06", 3, standPhoto)], cat, "pickup");
+  assert.equal(three.quantityDiscountAgorot, 19_50);
+  assert.equal(three.totalAgorot, 195_00 - 19_50);
+  // 2 דפי מדבקות (מבצע 25 ₪, חיסכון 5) + מעמד: המבצע עדיף על 10% (3 ₪) במדבקות, והמעמד מקבל 10%
+  const mix = computeQuote([line("P04", 2, stickerSq), line("P06", 1, standPhoto)], cat, "pickup");
+  assert.equal(mix.dealDiscountAgorot, 5_00);
+  assert.equal(mix.quantityDiscountAgorot, 6_50);
+  assert.equal(mix.totalAgorot, 30_00 + 65_00 - 5_00 - 6_50);
+  // מארז קבוע לא נספר ולא מקבל הנחה
+  const b = B("B05");
+  const sheets = expandFixedBundle(b).map((productId) => ({ productId, custom: stickerSq }));
+  const withBundle = computeQuote([{ lineId: "x", kind: "bundle", bundleId: b.id, items: sheets }, line("P06", 2, standPhoto)], cat, "pickup");
+  assert.equal(withBundle.quantityDiscountAgorot, 0);
+  assert.equal(withBundle.unitsToDiscount, 1);
 });

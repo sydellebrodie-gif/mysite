@@ -223,7 +223,7 @@ export default function BundleClient({ bundle: b, catalog }: { bundle: Bundle; c
               ) : null}
               <div className="sticky-total">
                 <span>סה״כ למארז: <strong className="ltr">{formatILS(price)}</strong>
-                  <small> ({[quote.packagingAgorot > 0 && "כולל אריזה", quote.dealDiscountAgorot > 0 && "כולל מבצע"].filter(Boolean).join(", ")})</small></span>
+                  <small> ({[quote.packagingAgorot > 0 && "כולל אריזה", quote.dealDiscountAgorot > 0 && "כולל מבצע", quote.quantityDiscountAgorot > 0 && "כולל הנחת כמות"].filter(Boolean).join(", ")})</small></span>
                 <button className="btn" type="submit" disabled={!fixed && items.length === 0}>
                   {editId ? "שמירת השינויים" : "הוספת המארז לסל"}
                 </button>
