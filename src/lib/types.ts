@@ -105,8 +105,12 @@ export interface ImageRef {
   height: number;
   /** תמונה ממוזערת קטנה לתצוגה בסל בלבד */
   thumb: string;
-  /** מזהה הקובץ בשרת, אחרי העלאה (שלב 4ג) */
+  /** מזהה הקובץ בשרת, אחרי העלאה ואימות */
   uploadId?: string;
+  /** מזהה מקומי בטופס (לעדכון אחרי העלאה) */
+  localId?: string;
+  /** מצב העלאה זמני. בלי ערך = מוכן (הועלה, או מצב פיתוח בלי שרת) */
+  state?: "uploading" | "failed";
 }
 
 export interface Customization {

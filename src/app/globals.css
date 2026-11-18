@@ -151,6 +151,13 @@ ul.error { padding-inline-start: 18px; }
 .thumbs img, .thumb-ph { width: 100%; aspect-ratio: 1; object-fit: cover; display: flex; align-items: center; justify-content: center; background: var(--soft); font-weight: 700; color: var(--muted); }
 .thumb-actions { display: flex; justify-content: space-around; font-size: .85rem; }
 .thumb-actions .link-btn { min-height: 36px; padding: 4px; }
+.thumbs li { position: relative; }
+.thumbs li.is-uploading img { opacity: .55; }
+.thumbs li.is-failed { border-color: var(--err); }
+.thumb-status { position: absolute; top: 6px; inset-inline-start: 6px; background: rgba(255,255,255,.92); border-radius: 8px; padding: 2px 8px; font-size: .8rem; font-weight: 600; }
+.thumb-status.bad { color: var(--err); }
+.thumbs li > small.error { display: block; padding: 0 6px 6px; font-size: .78rem; }
+.upload-btn.disabled, .link-btn.disabled { opacity: .5; cursor: not-allowed; }
 .stepper { display: inline-flex; align-items: center; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--surface); }
 .stepper button { width: var(--tap); height: var(--tap); border: 0; background: var(--soft); font-size: 1.2rem; cursor: pointer; }
 .stepper input { width: 64px; border: 0; border-radius: 0; text-align: center; min-height: var(--tap); }
@@ -194,3 +201,5 @@ ul.error { padding-inline-start: 18px; }
 .field > label.choice > span { font-weight: 600; }
 .gallery-placeholder { max-height: 240px; }
 @media (min-width: 860px) { .gallery-placeholder { max-height: 420px; } }
+.field > label.upload-btn { display: flex; margin: 0; }
+.field > label.check { display: flex; font-weight: 400; margin: 10px 0; }

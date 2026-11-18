@@ -20,6 +20,8 @@ const eslintConfig = [
       "next-env.d.ts",
     ],
   },
+  // סקריפטי בדיקת הדפדפן רצים ישירות ב־Node (CommonJS)
+  { files: ["tests/e2e/**/*.cjs"], rules: { "@typescript-eslint/no-require-imports": "off" } },
 ];
 
 export default eslintConfig;

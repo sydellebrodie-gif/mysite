@@ -54,7 +54,10 @@ export function validateCustomization(product: Product, c: Customization): Field
     if (f.type === "image") {
       const have = c.images[f.key]?.length ?? 0;
       const max = f.maxImages ?? 1;
-      if (have > max) errors[f.key] = `אפשר עד ${max} תמונות`;
+      const imgs = c.images[f.key] ?? [];
+      if (imgs.some((im) => im.state === "uploading")) errors[f.key] = "התמונה עדיין עולה. עוד רגע…";
+      else if (imgs.some((im) => im.state === "failed")) errors[f.key] = "העלאת תמונה נכשלה. יש לנסות שוב, להחליף או להסיר אותה";
+      else if (have > max) errors[f.key] = `אפשר עד ${max} תמונות`;
       else if (have < (f.minImages ?? 0) && !c.sendLater)
         errors[f.key] = f.minImages === 1 ? "יש להעלות תמונה, או לסמן \"אשלח את התמונות אחרי התשלום\"" : `יש להעלות לפחות ${f.minImages} תמונות, או לסמן "אשלח את התמונות אחרי התשלום"`;
       continue;

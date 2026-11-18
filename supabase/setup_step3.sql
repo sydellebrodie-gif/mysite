@@ -23,5 +23,10 @@ create index if not exists uploads_client_idx on public.uploads(client_hash, cre
 update public.bundle_templates
   set description = 'בוחרים מוצרים וכמויות, גם אותו מוצר עם תמונות שונות, והכול נארז יחד. המחיר הוא סכום המוצרים, ועוד אריזה.'
   where code = 'BFREE';
+
+-- A file that is not really an image is deleted right after upload.
+alter table public.uploads drop constraint if exists uploads_deleted_reason_check;
+alter table public.uploads add constraint uploads_deleted_reason_check
+  check (deleted_reason in ('owner_confirmed','temp_expired','retention','invalid_file'));
 select 'שלב 3 הוחל בהצלחה' as result;
 commit;
