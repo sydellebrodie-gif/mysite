@@ -203,3 +203,7 @@ ul.error { padding-inline-start: 18px; }
 @media (min-width: 860px) { .gallery-placeholder { max-height: 420px; } }
 .field > label.upload-btn { display: flex; margin: 0; }
 .field > label.check { display: flex; font-weight: 400; margin: 10px 0; }
+.designs-note { font-size: .95rem; padding: 4px 2px; }
+.design-count { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 4px 0 12px; font-weight: 600; }
+.stepper button:disabled { opacity: .4; cursor: not-allowed; }
+.stepper output { min-width: 48px; text-align: center; font-weight: 700; }

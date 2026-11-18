@@ -208,8 +208,8 @@ export const seedBundles: Bundle[] = [
   },
   {
     id: "ffc7f3de-8145-4bf5-982a-50fd4aff5deb", code: "B05", slug: "sticker-smiles", name: "מדביקים חיוכים",
-    description: "10 דפי מדבקות אישיים עמידים במים.", images: [], type: "fixed", priceAgorot: ILS(110),
-    items: [{ productId: byCode("P04"), qty: 10 }],
+    description: "10 דפי מדבקות אישיים עמידים במים, בעד 5 עיצובים שונים.", images: [], type: "fixed", priceAgorot: ILS(110),
+    items: [{ productId: byCode("P04"), qty: 10, maxDesigns: 5 }],
     minItems: 0, maxItems: null,
   },
   {

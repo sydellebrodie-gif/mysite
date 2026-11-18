@@ -118,3 +118,26 @@ test("ולידציה: מסלול עיצוב, מספר מילים, תמונות �
   // יין: משפט רשות
   assert.deepEqual(validateCustomization(P("P12"), c({ images: { photos: [img()] }, values: { design: "x" } })), {});
 });
+
+test("מדביקים חיוכים: 10 דפים בעד 5 עיצובים", async () => {
+  const { toGroups, fromGroups } = await import("../src/lib/bundle-designs.ts");
+  const b = B("B05");
+  const design = (k: number) => c({ option: "squares", images: { photos_squares: [img(`d${k}.jpg`)] } });
+  const bundleLine = (designs: number[]): CartLine =>
+    ({ lineId: `l${n++}`, kind: "bundle", bundleId: b.id, items: designs.map((k) => ({ productId: P("P04").id, custom: design(k) })) });
+  const ok = computeQuote([bundleLine([1, 1, 1, 2, 2, 3, 4, 4, 5, 5])], cat, "pickup");
+  assert.equal(ok.ok, true, JSON.stringify(ok.errors));
+  assert.equal(ok.totalAgorot, 110_00 + 10_00);
+  const bad = computeQuote([bundleLine([1, 2, 3, 4, 5, 6, 1, 1, 1, 1])], cat, "pickup");
+  assert.equal(bad.ok, false);
+  assert.match(bad.lines[0].errors.join(), /עד 5 עיצובים/);
+  // הקבוצות בטופס: יחידות רצופות זהות מתאחדות, וחזרה לסל משחזרת את כל 10 היחידות
+  const items = (bundleLine([1, 1, 1, 2, 2, 3, 4, 4, 5, 5]) as Extract<CartLine, { kind: "bundle" }>).items;
+  const groups = toGroups(b, items);
+  assert.deepEqual(groups.map((g) => g.count), [3, 2, 1, 2, 2]);
+  assert.deepEqual(fromGroups(groups), items);
+  // במארז אחר כל יחידה נשארת טופס נפרד, גם אם העיצובים זהים
+  const b4 = B("B04");
+  const same = expandFixedBundle(b4).map((productId) => ({ productId, custom: emptyCustomization() }));
+  assert.equal(toGroups(b4, same).length, 3);
+});

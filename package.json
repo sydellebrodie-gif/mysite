@@ -10,7 +10,8 @@
     "test": "node --test tests/*.test.ts",
     "seed:sql": "node scripts/gen-seed-sql.ts",
     "e2e": "node tests/e2e/flows.cjs",
-    "e2e:uploads": "node tests/e2e/uploads.cjs"
+    "e2e:uploads": "node tests/e2e/uploads.cjs",
+    "e2e:designs": "node tests/e2e/designs.cjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.119.0",

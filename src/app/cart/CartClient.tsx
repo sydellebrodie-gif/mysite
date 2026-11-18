@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { toGroups } from "@/lib/bundle-designs";
 import type { Catalog } from "@/lib/types";
 import { cart, useCart } from "@/lib/cart";
 import { computeQuote } from "@/lib/pricing";
@@ -64,9 +65,12 @@ export default function CartClient({ catalog }: { catalog: Catalog }) {
                 <span className="ltr">{formatILS(ql?.totalAgorot ?? 0)}</span>
               </div>
               <ol className="cart-children">
-                {line.items.map((it, k) => {
-                  const p = productById.get(it.productId);
-                  return p ? <li key={k}><strong>{p.name}</strong><LineSummary product={p} custom={it.custom} /></li> : null;
+                {toGroups(b, line.items).map((g, k) => {
+                  const p = productById.get(g.productId);
+                  return p ? (
+                    <li key={k}><strong>{p.name}{g.count > 1 && <> × <span className="ltr">{g.count}</span> (אותו עיצוב)</>}</strong>
+                      <LineSummary product={p} custom={g.custom} /></li>
+                  ) : null;
                 })}
               </ol>
               <div className="cart-line-actions">

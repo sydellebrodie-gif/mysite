@@ -58,6 +58,8 @@ export interface Product {
 export interface BundleItemDef {
   productId: string;
   qty: number;
+  /** כמה עיצובים שונים מותרים בין היחידות של הפריט הזה. בלי ערך = עיצוב לכל יחידה */
+  maxDesigns?: number | null;
 }
 
 export interface Bundle {

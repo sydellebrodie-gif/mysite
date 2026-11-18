@@ -28,7 +28,7 @@ async function loadFromSupabase(): Promise<Catalog> {
       product_design_options(key,label,help_text,sort_order),
       customization_fields(key,label,type,required,max_length,max_words,options,help_text,min_images,max_images,design_option_key,sort_order),
       product_designs(id,name,image_path,sort_order)`).order("sort_order"),
-    sb.from("bundle_templates").select("id,code,slug,name,description,images,type,fixed_price_agorot,min_items,max_items,sort_order,fixed_bundle_items(product_id,quantity)")
+    sb.from("bundle_templates").select("id,code,slug,name,description,images,type,fixed_price_agorot,min_items,max_items,sort_order,fixed_bundle_items(product_id,quantity,max_designs)")
       .in("type", ["fixed", "free"]).order("sort_order"),
     sb.from("shop_settings").select("*").single(),
   ]);
@@ -58,7 +58,7 @@ async function loadFromSupabase(): Promise<Catalog> {
   const bundleList: Bundle[] = (bundles.data as any[]).map((b) => ({
     id: b.id, code: b.code ?? b.id.slice(0, 6), slug: b.slug, name: b.name, description: b.description,
     images: (b.images ?? []).map(pub), type: b.type, priceAgorot: b.fixed_price_agorot,
-    items: (b.fixed_bundle_items ?? []).map((i: any) => ({ productId: i.product_id, qty: i.quantity })),
+    items: (b.fixed_bundle_items ?? []).map((i: any) => ({ productId: i.product_id, qty: i.quantity, maxDesigns: i.max_designs ?? null })),
     minItems: b.min_items, maxItems: b.max_items,
   }));
 

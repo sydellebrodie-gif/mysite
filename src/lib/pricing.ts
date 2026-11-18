@@ -9,6 +9,7 @@
 // * אין הנחת כמות כללית ואין כפל הנחות (טרם הוחלט).
 // * מלאי משותף: כל יחידה, לבד או במארז, יורדת מאותו מלאי.
 
+import { designLimitErrors } from "./bundle-designs.ts";
 import type { Bundle, CartLine, Catalog, DeliveryMethod, Product } from "./types";
 import { validateCustomization, missingImages } from "./customization.ts";
 
@@ -115,6 +116,7 @@ export function computeQuote(cart: CartLine[], catalog: Catalog, delivery: Deliv
       const got = line.items.map((i) => i.productId);
       if (expected.length !== got.length || expected.some((id, i) => id !== got[i]))
         lineErrors.push("תכולת המארז השתנתה. יש לפתוח את המארז מחדש ולשמור.");
+      else lineErrors.push(...designLimitErrors(b, line.items, (id) => productById.get(id)?.name ?? "פריט"));
     } else {
       if (line.items.length < b.minItems) lineErrors.push(`במארז צריכים להיות לפחות ${b.minItems} פריטים`);
       if (b.maxItems !== null && line.items.length > b.maxItems) lineErrors.push(`במארז אפשר עד ${b.maxItems} פריטים`);

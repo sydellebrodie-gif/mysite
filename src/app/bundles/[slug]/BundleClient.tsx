@@ -1,8 +1,9 @@
 "use client";
 // מארז קבוע (תכולה קבועה, טופס לכל יחידה) ומארז בהרכבה חופשית (הלקוח בוחר פריטים).
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import type { Bundle, CartBundleItem, Catalog, Product } from "@/lib/types";
+import { Fragment, useEffect, useMemo, useState } from "react";
+import type { Bundle, Catalog, Product } from "@/lib/types";
+import { type DesignGroup, fromGroups, toGroups } from "@/lib/bundle-designs";
 import Gallery from "@/components/Gallery";
 import CustomizeForm from "@/components/CustomizeForm";
 import DeliveryInfo from "@/components/DeliveryInfo";
@@ -14,8 +15,10 @@ import { bundleStockLimit, computeQuote, expandFixedBundle, isPurchasable } from
 export default function BundleClient({ bundle: b, catalog }: { bundle: Bundle; catalog: Catalog }) {
   const productById = useMemo(() => new Map(catalog.products.map((p) => [p.id, p])), [catalog]);
   const fixed = b.type === "fixed";
-  const [items, setItems] = useState<CartBundleItem[]>(() =>
-    fixed ? expandFixedBundle(b).map((productId) => ({ productId, custom: emptyCustomization(productById.get(productId)) })) : []);
+  // מצב הטופס: קבוצות עיצוב. ברוב המארזים כל קבוצה היא יחידה אחת; בפריט עם "עד N עיצובים" קבוצה מכסה כמה יחידות.
+  const [groups, setGroups] = useState<DesignGroup[]>(() => toGroups(b,
+    fixed ? expandFixedBundle(b).map((productId) => ({ productId, custom: emptyCustomization(productById.get(productId)) })) : []));
+  const items = useMemo(() => fromGroups(groups), [groups]);
   const [editId, setEditId] = useState<string | null>(null);
   const [showErrors, setShowErrors] = useState(false);
   const [open, setOpen] = useState(0);
@@ -24,31 +27,66 @@ export default function BundleClient({ bundle: b, catalog }: { bundle: Bundle; c
   useEffect(() => {
     const id = new URLSearchParams(window.location.search).get("edit");
     const line = id ? cart.find(id) : undefined;
-    if (line && line.kind === "bundle" && line.bundleId === b.id) { setEditId(line.lineId); setItems(line.items); }
-  }, [b.id]);
+    if (line && line.kind === "bundle" && line.bundleId === b.id) { setEditId(line.lineId); setGroups(toGroups(b, line.items)); }
+  }, [b]);
 
   const lineId = editId ?? "draft";
   const quote = computeQuote([{ lineId, kind: "bundle", bundleId: b.id, items }], catalog, null);
   const price = quote.totalAgorot;
-  const errorsByItem = items.map((it) => validateCustomization(productById.get(it.productId)!, it.custom));
+  const errorsByItem = groups.map((g) => validateCustomization(productById.get(g.productId)!, g.custom));
   const limit = fixed ? bundleStockLimit(b, catalog) : null;
   const soldOut = fixed && limit === 0;
   const totals = new Map<string, number>();
-  items.forEach((it) => totals.set(it.productId, (totals.get(it.productId) ?? 0) + 1));
+  groups.forEach((g) => { if (!g.shared) totals.set(g.productId, (totals.get(g.productId) ?? 0) + 1); });
   const seen = new Map<string, number>();
-  const labels = items.map((it) => {
-    const k = (seen.get(it.productId) ?? 0) + 1; seen.set(it.productId, k);
-    const p = productById.get(it.productId)!;
-    const t = totals.get(it.productId)!;
+  const labels = groups.map((g) => {
+    const key = g.shared ? `d${g.def}` : g.productId;
+    const k = (seen.get(key) ?? 0) + 1; seen.set(key, k);
+    const p = productById.get(g.productId)!;
+    if (g.shared) return `עיצוב ${k} · ${g.count === 1 ? "יחידה אחת" : `${g.count} יחידות`}`;
+    const t = totals.get(g.productId)!;
     return t > 1 ? `${p.name} (${k} מתוך ${t})` : p.name;
   });
 
-  const update = (i: number, patch: Partial<CartBundleItem>) =>
-    setItems((xs) => xs.map((x, j) => (j === i ? { ...x, ...patch } : x)));
+  const update = (i: number, patch: Partial<DesignGroup>) =>
+    setGroups((xs) => xs.map((x, j) => (j === i ? { ...x, ...patch } : x)));
+
+  /** בפריט עם עיצובים משותפים: מעבירים יחידה אחת מקבוצה לקבוצה, כך שהסך נשאר קבוע */
+  function moveUnit(from: number, to: number) {
+    setGroups((xs) => xs.map((x, j) => (j === from ? { ...x, count: x.count - 1 } : j === to ? { ...x, count: x.count + 1 } : x)));
+  }
+  /** הקבוצה הגדולה ביותר של אותו פריט (חוץ מ־except) שאפשר לקחת ממנה יחידה; ‎-1 אם אין */
+  const donor = (def: number, except = -1) => {
+    let best = -1;
+    groups.forEach((g, j) => {
+      if (j !== except && g.def === def && g.count > 1 && (best < 0 || g.count > groups[best].count)) best = j;
+    });
+    return best;
+  };
+  function addDesign(def: number) {
+    const from = donor(def);
+    if (from < 0) return;
+    const idx = groups.map((g, j) => ({ g, j })).filter(({ g }) => g.def === def);
+    const last = idx[idx.length - 1].j;
+    const p = productById.get(groups[last].productId);
+    setGroups((xs) => {
+      const ys = xs.map((x, j) => (j === from ? { ...x, count: x.count - 1 } : x));
+      ys.splice(last + 1, 0, { productId: xs[last].productId, custom: emptyCustomization(p), count: 1, def, shared: true });
+      return ys;
+    });
+    setOpen(last + 1);
+  }
+  function removeDesign(i: number) {
+    const same = groups.map((g, j) => ({ g, j })).filter(({ g, j }) => j !== i && g.def === groups[i].def);
+    const to = [...same].reverse().find(({ j }) => j < i) ?? same[0];
+    if (!to) return;
+    setGroups((xs) => xs.flatMap((x, j) => (j === i ? [] : j === to.j ? [{ ...x, count: x.count + xs[i].count }] : [x])));
+    setOpen(-1);
+  }
 
   function addProduct(p: Product) {
-    setItems((xs) => [...xs, { productId: p.id, custom: emptyCustomization(p) }]);
-    setOpen(items.length);
+    setGroups((xs) => [...xs, { productId: p.id, custom: emptyCustomization(p), count: 1, def: -1, shared: false }]);
+    setOpen(groups.length);
   }
 
   function submit() {
@@ -107,13 +145,24 @@ export default function BundleClient({ bundle: b, catalog }: { bundle: Bundle; c
               <h2 className="h-small">{fixed ? "עיצוב לכל פריט במארז" : `המארז שלכם (${items.length} פריטים)`}</h2>
               {!fixed && items.length === 0 && <p className="muted">עדיין לא נבחרו מוצרים.</p>}
               <ol className="bundle-items">
-                {items.map((it, i) => {
+                {groups.map((it, i) => {
                   const p = productById.get(it.productId)!;
                   const errs = errorsByItem[i];
                   const hasErr = showErrors && Object.keys(errs).length > 0;
-                  const prevSame = items.slice(0, i).map((x, j) => ({ x, j })).reverse().find(({ x }) => x.productId === it.productId);
+                  const prevSame = it.shared ? undefined
+                    : groups.slice(0, i).map((x, j) => ({ x, j })).reverse().find(({ x }) => x.productId === it.productId);
+                  const d = it.shared ? b.items[it.def] : undefined;
+                  const defGroups = d ? groups.filter((g) => g.def === it.def) : [];
+                  const lastOfDef = d && groups[i + 1]?.def !== it.def;
                   return (
-                    <li key={i} className={`bundle-item ${hasErr ? "has-error" : ""}`}>
+                    <Fragment key={i}>
+                    {d && groups[i - 1]?.def !== it.def && (
+                      <li className="designs-note muted">
+                        {d.qty} יחידות של {p.name}, בעד {d.maxDesigns} עיצובים שונים. אפשר עיצוב אחד לכולן,
+                        או להוסיף עיצובים ולבחור כמה יחידות מכל אחד.
+                      </li>
+                    )}
+                    <li className={`bundle-item ${hasErr ? "has-error" : ""}`}>
                       <button type="button" className="bundle-item-head" aria-expanded={open === i} onClick={() => setOpen(open === i ? -1 : i)}>
                         <span>{labels[i]}</span>
                         <span className={Object.keys(errs).length ? "status todo" : "status done"}>
@@ -122,6 +171,18 @@ export default function BundleClient({ bundle: b, catalog }: { bundle: Bundle; c
                       </button>
                       {open === i && (
                         <div className="bundle-item-body">
+                          {d && (
+                            <div className="design-count">
+                              <span id={`dc${i}`}>כמה יחידות בעיצוב הזה</span>
+                              <div className="stepper" role="group" aria-labelledby={`dc${i}`}>
+                                <button type="button" aria-label="פחות" disabled={it.count <= 1 || defGroups.length < 2}
+                                  onClick={() => moveUnit(i, groups.findIndex((g, j) => j !== i && g.def === it.def))}>−</button>
+                                <output className="ltr" aria-live="polite">{it.count}</output>
+                                <button type="button" aria-label="יותר" disabled={donor(it.def, i) < 0}
+                                  onClick={() => moveUnit(donor(it.def, i), i)}>+</button>
+                              </div>
+                            </div>
+                          )}
                           {prevSame && (
                             <button type="button" className="link-btn" onClick={() => update(i, { custom: structuredClone(prevSame.x.custom) })}>
                               העתקת העיצוב מהפריט הקודם
@@ -130,13 +191,28 @@ export default function BundleClient({ bundle: b, catalog }: { bundle: Bundle; c
                           <CustomizeForm product={p} value={it.custom} onChange={(c) => update(i, { custom: c })}
                             errors={errs} showErrors={showErrors} idPrefix={`b${i}`} />
                           {!fixed && (
-                            <button type="button" className="link-btn danger" onClick={() => { setItems((xs) => xs.filter((_, j) => j !== i)); setOpen(-1); }}>
+                            <button type="button" className="link-btn danger" onClick={() => { setGroups((xs) => xs.filter((_, j) => j !== i)); setOpen(-1); }}>
                               הסרה מהמארז
+                            </button>
+                          )}
+                          {d && defGroups.length > 1 && (
+                            <button type="button" className="link-btn danger" onClick={() => removeDesign(i)}>
+                              הסרת העיצוב (היחידות עוברות לעיצוב אחר)
                             </button>
                           )}
                         </div>
                       )}
                     </li>
+                    {d && lastOfDef && (
+                      <li>
+                        <button type="button" className="btn small secondary"
+                          disabled={defGroups.length >= (d.maxDesigns ?? 1) || donor(it.def) < 0}
+                          onClick={() => addDesign(it.def)}>
+                          + עיצוב נוסף ({defGroups.length} מתוך עד {d.maxDesigns})
+                        </button>
+                      </li>
+                    )}
+                    </Fragment>
                   );
                 })}
               </ol>
